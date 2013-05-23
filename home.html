@@ -1,0 +1,450 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- paulirish.com/2008/conditional-css-vs-css-hacks-answer-neither/ -->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Set the viewport width to device width for mobile -->
+  <meta name="viewport" content="width=device-width" />
+
+  <title>ShoeMonk</title>
+
+  <!-- Included CSS Files (Uncompressed) -->
+  <!--
+  <link rel="stylesheet" href="css/foundation.css">
+  -->
+
+  <!-- Included CSS Files (Compressed) -->
+  <link rel="stylesheet" href="css/foundation.min.css"/>
+  <link rel="stylesheet" href="css/app.css"/>
+    <link href="css/reset.css" rel="stylesheet" type="text/css" />
+	  <link href="css/style.css" rel="stylesheet" type="text/css" />
+      <link href='http://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic' rel='stylesheet' type='text/css'/>
+      <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700' rel='stylesheet' type='text/css'/>
+      <link rel="shortcut icon" href="img/favicon/favicon.ico"/>
+      <link rel="stylesheet" type="text/css" href="css/jquery.powertip.css" />
+
+	<script src="scripts/modernizr.foundation.js"></script>
+
+	<!-- Adding JQuery-->
+	<script type="text/javascript" src="scripts/jquery-1.8.2.min.js"></script>
+	<!-- Add Lazy Loading -->
+	<script type="text/javascript" src="scripts/jquery.lazyload.js"></script>
+	<!-- Add Power Tip-->
+	<script type="text/javascript" src="scripts/jquery.powertip.js"></script>
+	<!--Add JQuery Form-->
+	<script type="text/javascript" src="scripts/jquery.form.js"></script>
+
+<script type="text/javascript">
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-36364390-1']);
+		  _gaq.push(['_setDomainName', 'shoemonk.com']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+			    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			  })();
+</script>
+
+<script type="text/javascript">var adblock=true;</script>
+<script type="text/javascript" src="scripts/adframe.js"></script>
+<script type="text/javascript">
+function Warnings(){
+	var jordanSel = $('#Jordan').is(':checked');
+	var femSel = $('#Female').is(':checked');
+
+	if(adblock && jordanSel && femSel){
+		$("#adandwarningModal").reveal();
+	}else if(jordanSel && femSel){
+		$("#warningModal").reveal();
+	}else if(adblock){
+		$("#adblockModal").reveal();
+	}
+}
+</script>
+
+<script>
+	function CheckBrowserType(){
+	if( navigator.userAgent.match(/Android/i)
+			|| navigator.userAgent.match(/webOS/i)
+			|| navigator.userAgent.match(/iPhone/i)
+			|| navigator.userAgent.match(/iPad/i)
+			|| navigator.userAgent.match(/iPod/i)
+			|| navigator.userAgent.match(/BlackBerry/i)
+			|| navigator.userAgent.match(/RIM/i)
+			|| navigator.userAgent.match(/Windows Phone/i)
+			){
+				return true;
+			}else{
+				return false;
+		}
+	}
+</script>
+
+<script>
+	function xhr_get(address, beforeLoading, data){
+		if(beforeLoading === 0){
+			return $.ajax({
+				url: address,
+				context: document.body,
+				data: data,
+				type: 'GET'
+			});
+		}
+		else{
+			$('#contentBox').empty();
+
+			return $.ajax({
+				url: address,
+				data: data,
+				beforeSend: function(){$('#contentBox').html("<img src='img/Loading.gif' style='position: relative; left:20%; bottom:-8%;' />");},
+				type: 'GET',
+				dataType: 'json'
+			});
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	function Register(){
+		var name = $('#name').val();
+		var email = $('#email').val();
+
+		if(name == '' || email == '')
+		{
+			$('#incompleteModal').reveal();
+		}else{
+			var data = 'Type=AdditionalSales'+'&Name='+ name + '&Email=' + email
+			xhr_get('/reg', 0, data).done(function(){
+				$('#name').val("");
+				$('#email').val("");
+				$('#thanksModal').reveal();
+				});
+		}
+	}
+</script>
+
+<script type="text/javascript">
+	// Handy "macro"
+	function GetClick(id){
+		var innerText = document.getElementById(id).innerHTML
+		var splitArray = (innerText).split("/");
+		return {"name":splitArray[0], "sex":splitArray[1], "reg":splitArray[2], "sale":splitArray[3]}
+	}
+
+	function GetShoeInfo(){
+		var args = $('#shoeInfo').formSerialize();
+		return args
+	}
+
+	function TrackClick(shoeid) {
+		xhr_get('/ClickTracker', 0,GetClick("info" + shoeid));
+	}
+
+	function TrackEvent(type){
+		var event = 'Event=' + type
+		xhr_get('/EventTracker', 0, event);
+	}
+
+	function GetShoes() {
+		var sexcheck = "False"
+		var brandcheck = "False"
+
+		$(':checkbox').each(function () {
+			if(this.name == "gender" && this.checked){
+				sexcheck = "True";
+			}else{
+				if(this.checked){
+					brandcheck = "True";
+					}
+				}
+			});
+
+		if(brandcheck === "True" && sexcheck === "True")
+		{
+			xhr_get('/GetShoes', 1,GetShoeInfo()).done(function(data){
+				var content = '';
+
+			var mobileBrowser = CheckBrowserType();
+
+			if(0 === data.length){
+				$('#contentBox').html("<img src='img/noshoe.png' style=' height:415px; position: relative; left:20%; bottom:-8%;' />");
+			}else{
+				for(var i=0; i<data.length; i++){
+					if((data[i].name).indexOf('\'')!= -1)
+					{
+						var splitter = (data[i].name).split('\'');
+						data[i].name = splitter[0]+'\\'+'\''+splitter[1];
+					}
+
+						data[i].priceold = Number(data[i].priceold).toFixed(2);
+						data[i].pricenew = Number(data[i].pricenew).toFixed(2);
+
+					content += '<div class="shoeBox" id="mouseon'+i+'" OnClick="TrackClick('+i+')">';
+
+					if (mobileBrowser){
+						content += '<img class="shoeImage" src="img/blank.png" data-original="images/'+data[i].imgsmall+'">';
+						content += '<noscript><img src="images/'+data[i].imgsmall+'"></noscript>';
+					}else{
+						content += '<a class="shoeLink" href='+data[i].link+' OnClick="TrackClick('+i+')" target="_blank">';
+						content += '<img class="shoeImage" src="img/blank.png" data-original="images/'+data[i].imgsmall+'">';
+						content += '<noscript><img src="images/'+data[i].imgsmall+'"></noscript>';
+						content += '</a>';
+						}
+
+					content += '<p style="visibility:hidden;" id="info'+i+'">'+data[i].name+'/'+data[i].sex+'/'+data[i].priceold+'/'+data[i].pricenew+'</p>';
+					content += '</div>'
+					content += '<script type="text/javascript">'
+					content += '$(function(){'
+					content += '$(\'#mouseon'+i+'\').data(\'powertipjq\', $([';
+					content += '\'<p>'+data[i].name+'</p>\',';
+					content += '\'<p>Reg: $'+data[i].priceold+'</p>\',';
+					content += '\'<p><b>Now: $'+data[i].pricenew+'</b></p>\',';
+					content += '\'<p>'+data[i].discount+'% off - <a style="color:#FF9955;" href='+data[i].link+' OnClick="TrackClick('+i+')" target="_blank">CLOSER LOOK</a></p>\',';
+					content += '].join(\'\\n\')));';
+
+					content += '$(\'#mouseon'+i+'\').powerTip({';
+					content += 'placement: \'n\',';
+					content += 'mouseOnToPopup: true,';
+					content += 'smartPlacement: true';
+					content += '});';
+
+					content += '$(\'#mouseon'+i+'\').on({';
+					content += 'powerTipRender: function(){skimlinks();}';
+					content += '});';
+					content += '});';
+					content += '</'+'script>';
+					}
+				$('#contentBox').empty();//remove loading image
+
+				$(content).appendTo('#contentBox');
+
+				$('.shoeImage').show().lazyload({effect: "fadeIn", container: $("#contentBox"),threshold: 200});
+
+					Warnings();
+				}
+			});
+		}else{
+			if(sexcheck === "False" && brandcheck === "False"){
+					$("#BothSelectionWarningModal").reveal();
+				} else if(sexcheck === "False"){
+					$("#GenderSelectionWarningModal").reveal();
+				}else{
+					$("#BrandSelectionWarningModal").reveal();
+					}
+		}
+	}
+</script>
+
+  <title>ShoeMonk: Sales on Brand Name Shoes</title>
+<meta name="Description" content="We aggregate the best sales on brand name shoes on the web, and put them in one location for you to easily browse. When you find a pair of shoes that you like we will direct you to the retailer to purchase the shoes. We donate a dollar from our profit on a sale to charity.">
+<meta name="robots" content="NOODP">
+</head>
+<body>
+	<div class="row">
+                <div class="logo">
+                     &nbsp;
+            </div>
+    	<div class="twelve columns">
+        	<div class="socialMedia">
+            	<ul>
+                	<li><a href="http://www.facebook.com/theshoemonk" title="Facebook"><img src="img/facebook.png" alt="" /></a></li>
+                    <li><a href="http://www.twitter.com/theshoemonk" title="Twitter"><img src="img/twitter.png" alt="" /></a></li>
+                    <li><a href="http://shoemonk.wordpress.com" title="Wordpress"><img src="img/wordpress.png" alt="" /></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+	<div class="header">
+         <div class="row"
+         	<div class="twelve columns">
+            	<h1 class="right hide-for-small">Enlighten Your Sole</h1>
+				<a href="/watchlist"><img class="right hide-for-small" src="img/WatchBadge.png" style="margin-left:33%;margin-top:-20px;height:140px; z-index:1;position:absolute; float:right;"/></a>
+            </div>
+         </div>
+    </div>
+    <div class="row grey">
+    	<div class="four columns">
+			<div class="ribbon">
+				<a href="#" data-reveal-id="myModal" OnClick="TrackEvent('ImportantInfo')"><h2>Important Info</h2></a>
+            </div>
+            <form id="shoeInfo">
+                <h3 class="black">Gender</h3>
+                <div class="checkboxOption"><input type="checkbox" name="gender" value="M" id="Male">Men's</div>
+                <div class="checkboxOption"><input type="checkbox" name="gender" value="F" id="Female">Women's</div><br /><br />
+                <h3 class="black">Brand</h3>
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Nike" id="Nike">Nike</div>
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Adidas" id="Adidas">Adidas</div><br />
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Puma" id="Puma">Puma</div>
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Converse" id="Converse">Converse</div><br />
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Supra" id="Supra">Supra</div>
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Jordan" id="Jordan">Jordan</div><br />
+                <div class="checkboxOption"><input type="checkbox" name="brands" value="Vans" id="Vans">Vans</div>
+                <br /><br />
+                <div class="size">
+                    <h3 class="black">Size</h3>
+
+
+		       <div>
+					<select class="selectSize" name="Size" id="sizesSelect">
+						<option value="3">3</option>
+						<option value="3.5">3.5</option>
+						<option value="4">4</option>
+						<option value="4.5">4.5</option>
+						<option value="5">5</option>
+						<option value="5.5">5.5</option>
+						<option value="6">6</option>
+						<option value="6.5">6.5</option>
+						<option value="7">7</option>
+						<option value="7.5">7.5</option>
+						<option value="8">8</option>
+						<option value="8.5">8.5</option>
+						<option value="9">9</option>
+						<option value="9.5">9.5</option>
+						<option selected="selected" value="10">10</option>
+						<option value="10.5">10.5</option>
+						<option value="11">11</option>
+						<option value="11.5">11.5</option>
+						<option value="12">12</option>
+						<option value="12.5">12.5</option>
+						<option value="13">13</option>
+						<option value="13.5">13.5</option>
+						<option value="14">14</option>
+						<option value="14.5">14.5</option>
+						<option value="15">15</option>
+						<option value="15.5">15.5</option>
+						<option value="16">16</option>
+					</select>
+				</div>
+                                <h3 style="margin-top:10px;" class="black">Style</h3>
+                                <select class="selectStyle" name="Style" id="styleSelect">
+						<option selected="selected" value="Casual">Casual</option>
+						<option value="Active">Active</option>
+					</select>
+                </div>
+                <div class="price">
+                    <h3 class="black">Sort by</h3>
+						<div>
+							<select class="selectOrder" name="Order" id="orderSelect">
+								<option selected="selected" value="SaleDate_desc">LATEST RELEASES</option>
+								<option value="PriceNew_asc">PRICE INCREASING</option>
+								<option value="PriceNew_desc">PRICE DECREASING</option>
+								<option value="Discount_desc">DISCOUNT DECREASING</option>
+								<option value="Discount_asc">DISCOUNT INCREASING</option>
+							</select>
+						</div>
+                </div>
+                <br />
+                	    <input type="button" OnClick="GetShoes()" value="Load Choices" class="right btn" style="margin-top:10px;"/>
+                </form>
+        </div>
+
+
+        <div class="eight columns">
+        	<div class="shoes info" id="contentBox">
+			<img class="startMonk" src="img/Startmonk.png"/>
+        </div>
+            </div>
+        </div>
+    </div>
+    <div class="row footer">
+    	<div class="six columns">
+        	<p class="left">Copyright Shoemonk. All rights reserved.</p>
+        </div>
+        <div class="six columns">
+        	<ul class="right">
+            	<li><a href="">Home</a></li>
+            	<li><a href="privacy.html">Privacy Policy</a></li>
+                <li><a href="whoarewe.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+		<div id="myModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6>ADDITIONAL SALES</h6>
+				<p class="xsales">{{xSales|linebreaksbr}}
+				If you would like to be notified of additional sales events, please fill in your name and email below!</br></br>
+				Name: <input style="width:75%;" type="text" name="name" id="name">
+				Email: <input style="width:75%;" type="text" name="email"id="email">
+				<input style="margin-right:65px" type="button" id="submit" value="Submit" OnClick="Register()" class="right btn" /></p>
+				<a class="close-reveal-modal">&#215;</a>
+		</div>
+		<div id="warningModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6>ATTENTION:</h6>
+				<p class="xsales">PLEASE READ FOR WOMENS JORDANS: Women's Jordan sizes are actually Girl's shoe sizes.To get the proper
+				Women's size add 2 to the Girl's size.</p>
+				<a class="close-reveal-modal">&#215;</a>
+		</div>
+		<div id="adblockModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6>ATTENTION:</h6>
+				<p class="xsales">Your browser is using AD BLOCKER. This prevents us from tracking any purchases you make, and therefore we can not donate to charity. To
+					prevent this pop up and allows us to donate, please turn ad block off for Shoemonk. Thank you.</p>
+				<a class="close-reveal-modal">&#215;</a>
+		</div>
+		<div id="adandwarningModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6>ATTENTION:</h6>
+				<p class="xsales">PLEASE READ FOR WOMENS JORDANS: Women's Jordan sizes are actually Girl's shoe sizes.To get the proper
+				Women's size add 2 to the Girl's size.</p>
+				<p class="xsales">Your browser is using an AD BLOCKER. This prevents us from tracking any purchases you make, and therefore we can not donate to charity. To
+					prevent this pop up, and allow us to donate, please turn the ad blocker off for Shoemonk. Thank you.</p>
+				<a class="close-reveal-modal">&#215;</a>
+		</div>
+		<div id="BothSelectionWarningModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6><center>Please select a Gender and Brand.</center></h6>
+		</div>
+		<div id="GenderSelectionWarningModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6><center>Please select a Gender.</center></h6>
+		</div>
+		<div id="BrandSelectionWarningModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+				<h6><center>Please select a Brand.</center></h6>
+		</div>
+		<div id="thanksModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+			<h6>Thanks for signing up!</h6>
+			<p class="xsales">We will notify you when there are any new additional sales!</p>
+			<a class="close-reveal-modal">&#215;</a>
+		</div>
+		<div id="incompleteModal" class="reveal-modal" style="top: 100px; opacity: 1; visibility: hidden;">
+			<h6>Missing Info</h6>
+			<p class="xsales">Please provide both your name and email.</p>
+			<a class="close-reveal-modal">&#215;</a>
+		</div>
+
+
+  <!-- Included JS Files (Uncompressed) -->
+  <!--
+  <script src="scripts/jquery.foundation.mediaQueryToggle.js"></script>
+  <script src="scripts/jquery.foundation.forms.js"></script>
+  <script src="scripts/jquery.event.move.js"></script>
+  <script src="scripts/jquery.event.swipe.js"></script>
+  <script src="scripts/jquery.foundation.reveal.js"></script>
+  <script src="scripts/jquery.foundation.orbit.js"></script>
+  <script src="scripts/jquery.foundation.navigation.js"></script>
+  <script src="scripts/jquery.foundation.buttons.js"></script>
+  <script src="scripts/jquery.foundation.tabs.js"></script>
+  <script src="scripts/jquery.foundation.tooltips.js"></script>
+  <script src="scripts/jquery.foundation.accordion.js"></script>
+  <script src="scripts/jquery.placeholder.js"></script>
+  <script src="scripts/jquery.foundation.alerts.js"></script>
+  <script src="scripts/jquery.foundation.topbar.js"></script>
+  <script src="scripts/jquery.foundation.joyride.js"></script>
+  <script src="scripts/jquery.foundation.clearing.js"></script>
+  <script src="scripts/jquery.foundation.magellan.js"></script>
+
+  -->
+
+  <!-- Included JS Files (Compressed) -->
+  <script src="scripts/jquery.foundation.mediaQueryToggle.js"></script>
+	<!--Add foundation reveal-->
+	<script type="text/javascript" src="scripts/jquery.foundation.reveal.js"></script>
+
+
+  <!-- Initialize JS Plugins -->
+  <script src="scripts/app.js"></script>
+
+	<script type="text/javascript" src="scripts/skimlinks.js"></script>
+</body>
+</html>

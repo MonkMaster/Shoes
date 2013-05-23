@@ -1,0 +1,47 @@
+application: testshoemonk
+version: 2
+runtime: python27
+api_version: 1
+threadsafe: false
+
+handlers:
+- url: /favicon.ico
+  static_files: img\favicon\favicon.ico
+  upload: img\favicon\favicon.ico
+
+- url: /css
+  static_dir: css
+
+- url: /scripts
+  static_dir: scripts
+
+- url: /foundation
+  static_dir: foundation
+
+- url: /images
+  static_dir: images
+
+- url: /img
+  static_dir: img
+
+- url: /whoarewe.html
+  static_files: static/whoarewe.html
+  upload: static/whoarewe.html
+
+- url: /privacy.html
+  static_files: static/privacy.html
+  upload: static/privacy.html
+
+- url: /contact.html
+  static_files: static/contact.html
+  upload: static/contact.html
+
+- url: /.*
+  script: controller.app
+
+error_handlers:
+- file: overload.html
+
+libraries:
+- name: django
+  version: "1.2"
